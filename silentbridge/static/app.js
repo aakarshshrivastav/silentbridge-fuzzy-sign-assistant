@@ -2,6 +2,7 @@ const state = {
   mode: "demo",
   latest: null,
   poller: null,
+  cameraStream: null,
   selectedSign: "Help",
 };
 
@@ -76,25 +77,33 @@ function setMode(mode) {
 
 async function startCamera() {
   setMode("live");
-  const status = await api("/api/live/start", { method: "POST", body: "{}" });
-  if (!status.ok) {
-    $("cameraStatus").textContent = status.error || "Camera unavailable";
+  try {
+    state.cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 960 }, height: { ideal: 720 }, facingMode: "user" },
+      audio: false,
+    });
+  } catch (error) {
+    $("cameraStatus").textContent = "Browser camera permission was denied or unavailable.";
     $("videoFeed").style.display = "none";
     $("videoPlaceholder").style.display = "grid";
-    $("videoPlaceholder").textContent = "Camera is unavailable. You can still use the sign buttons above.";
+    $("videoPlaceholder").textContent = "Allow camera permission in the browser, or use the sign buttons above.";
     return;
   }
+
+  $("videoFeed").srcObject = state.cameraStream;
   $("videoPlaceholder").style.display = "none";
   $("videoFeed").style.display = "block";
-  $("videoFeed").src = `/video_feed?t=${Date.now()}`;
-  $("cameraStatus").textContent = "Camera running";
+  $("cameraStatus").textContent = "Camera running in browser";
   if (state.poller) clearInterval(state.poller);
-  state.poller = setInterval(refreshLiveResult, 700);
+  state.poller = setInterval(analyzeCameraFrame, 1200);
 }
 
 async function stopCamera() {
-  await api("/api/live/stop", { method: "POST", body: "{}" });
-  $("videoFeed").src = "";
+  if (state.cameraStream) {
+    state.cameraStream.getTracks().forEach((track) => track.stop());
+  }
+  state.cameraStream = null;
+  $("videoFeed").srcObject = null;
   $("videoFeed").style.display = "none";
   $("videoPlaceholder").style.display = "grid";
   $("videoPlaceholder").textContent = "Camera preview appears here";
@@ -103,10 +112,32 @@ async function stopCamera() {
   state.poller = null;
 }
 
-async function refreshLiveResult() {
-  const status = await api("/api/live/latest");
-  if (status.latest) renderResult(status.latest);
-  if (status.error) $("cameraStatus").textContent = status.error;
+async function analyzeCameraFrame() {
+  const video = $("videoFeed");
+  if (!state.cameraStream || video.readyState < 2) return;
+
+  const canvas = $("cameraCanvas");
+  const width = video.videoWidth || 640;
+  const height = video.videoHeight || 480;
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, width, height);
+
+  try {
+    const result = await api("/api/analyze-frame", {
+      method: "POST",
+      body: JSON.stringify({ image: canvas.toDataURL("image/jpeg", 0.72) }),
+    });
+    if (result.ok) {
+      renderResult(result);
+      $("cameraStatus").textContent = result.hand_detected ? "Hand detected" : "Camera running. Show one hand clearly.";
+    } else {
+      $("cameraStatus").textContent = result.error || "Camera running";
+    }
+  } catch (error) {
+    $("cameraStatus").textContent = "Camera preview works. Backend analysis is unavailable.";
+  }
 }
 
 async function speakText(text) {

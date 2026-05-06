@@ -92,7 +92,8 @@
           <button id="stopCamera" type="button">Stop Camera</button>
         </div>
         <div class="video-shell">
-          <img id="videoFeed" src="" alt="" />
+          <video id="videoFeed" autoplay playsinline muted></video>
+          <canvas id="cameraCanvas" width="640" height="480"></canvas>
           <div id="videoPlaceholder">Camera preview appears here</div>
         </div>
       </details>

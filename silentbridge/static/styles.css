@@ -291,6 +291,10 @@ input[type="range"] {
   object-fit: cover;
 }
 
+#cameraCanvas {
+  display: none;
+}
+
 #videoPlaceholder {
   position: absolute;
   inset: 0;

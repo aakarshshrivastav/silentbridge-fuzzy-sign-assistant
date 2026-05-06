@@ -2,7 +2,7 @@
 
 Real-time sign-to-speech and emergency assistance system for deaf and mute users, using hand landmarks, emotion cues, and Mamdani fuzzy inference.
 
-SilentBridge turns webcam gestures into text, speech, urgency scores, and suggested actions. It includes a live camera pipeline using OpenCV and MediaPipe, a fuzzy inference backend using scikit-fuzzy, a Flask API, and an HTML/CSS/JavaScript frontend.
+SilentBridge turns webcam gestures into text, speech, urgency scores, and suggested actions. It includes browser webcam capture, MediaPipe frame analysis, a fuzzy inference backend using scikit-fuzzy, a FastAPI API served with Uvicorn, and an HTML/CSS/JavaScript frontend.
 
 ## Features
 
@@ -37,7 +37,7 @@ SilentBridge turns webcam gestures into text, speech, urgency scores, and sugges
 
 ```text
 silentbridge/
-  app.py                    Flask backend and API routes
+  app.py                    FastAPI backend and Uvicorn entrypoint
   config.py                 Sign catalog, messages, and actions
   fuzzy_engine.py           Mamdani fuzzy inference system
   gesture_recognition.py    Landmark feature extraction and classifier
@@ -72,7 +72,13 @@ Run the app:
 python3 silentbridge/app.py
 ```
 
-Open `http://127.0.0.1:5000` in your browser. If you do not have a webcam, use demo mode.
+Or run Uvicorn directly:
+
+```bash
+uvicorn silentbridge.app:app --host 127.0.0.1 --port 5000
+```
+
+Open `http://127.0.0.1:5000` in your browser. The live camera preview uses browser permission. If you do not have a webcam, use demo mode.
 
 ## Train Custom Gestures
 
@@ -90,7 +96,7 @@ Train the simple centroid classifier:
 python3 scripts/train_centroid_model.py
 ```
 
-Then restart the Flask app. The live classifier will load `data/gesture_centroids.csv` automatically.
+Then restart the Uvicorn app. The live classifier will load `data/gesture_centroids.csv` automatically.
 
 ## Fuzzy Inputs
 
