@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.streamlit/secrets.toml
+data/gesture_samples.csv
+data/gesture_centroids.csv
+data/communication_history.csv
+*.log
