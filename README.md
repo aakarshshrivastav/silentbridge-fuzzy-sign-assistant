@@ -2,7 +2,7 @@
 
 Real-time sign-to-speech and emergency assistance system for deaf and mute users, using hand landmarks, emotion cues, and Mamdani fuzzy inference.
 
-SilentBridge turns webcam gestures into text, speech, urgency scores, and suggested actions. It includes a live camera pipeline using OpenCV and MediaPipe, a fuzzy inference backend using scikit-fuzzy, and a Streamlit dashboard for demonstration.
+SilentBridge turns webcam gestures into text, speech, urgency scores, and suggested actions. It includes a live camera pipeline using OpenCV and MediaPipe, a fuzzy inference backend using scikit-fuzzy, a Flask API, and an HTML/CSS/JavaScript frontend.
 
 ## Features
 
@@ -17,7 +17,7 @@ SilentBridge turns webcam gestures into text, speech, urgency scores, and sugges
 - Emergency mode for Help, Pain, Medicine, and Emergency signs
 - Two-way quick replies for non-sign-language users
 - Communication history logging
-- Membership function visualizations
+- Membership function visualizations in the browser
 
 ## Supported Demo Signs
 
@@ -37,13 +37,17 @@ SilentBridge turns webcam gestures into text, speech, urgency scores, and sugges
 
 ```text
 silentbridge/
-  app.py                    Streamlit frontend and orchestration
+  app.py                    Flask backend and API routes
   config.py                 Sign catalog, messages, and actions
   fuzzy_engine.py           Mamdani fuzzy inference system
   gesture_recognition.py    Landmark feature extraction and classifier
   history.py                CSV communication logging
   speech.py                 Text-to-speech helpers
   vision.py                 Webcam frame processing
+  static/
+    index.html              HTML frontend
+    styles.css              CSS styling
+    app.js                  Browser UI logic
 scripts/
   record_gesture_dataset.py Webcam dataset recorder
   train_centroid_model.py   Builds a centroid model from recorded landmarks
@@ -65,10 +69,10 @@ pip install -r requirements.txt
 Run the app:
 
 ```bash
-streamlit run silentbridge/app.py
+python3 silentbridge/app.py
 ```
 
-If you do not have a webcam, use the dashboard's demo mode.
+Open `http://127.0.0.1:5000` in your browser. If you do not have a webcam, use demo mode.
 
 ## Train Custom Gestures
 
@@ -86,7 +90,7 @@ Train the simple centroid classifier:
 python3 scripts/train_centroid_model.py
 ```
 
-Then restart the Streamlit app. The live classifier will load `data/gesture_centroids.csv` automatically.
+Then restart the Flask app. The live classifier will load `data/gesture_centroids.csv` automatically.
 
 ## Fuzzy Inputs
 

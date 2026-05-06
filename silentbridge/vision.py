@@ -76,22 +76,27 @@ class VisionProcessor:
             self.face_mesh.close()
 
     def _init_mediapipe(self) -> None:
-        if mp is None:
+        if mp is None or not hasattr(mp, "solutions"):
             return
-        self.hands = mp.solutions.hands.Hands(
-            static_image_mode=False,
-            max_num_hands=1,
-            min_detection_confidence=0.55,
-            min_tracking_confidence=0.5,
-        )
-        self.face_mesh = mp.solutions.face_mesh.FaceMesh(
-            static_image_mode=False,
-            max_num_faces=1,
-            refine_landmarks=True,
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5,
-        )
-        self.drawer = mp.solutions.drawing_utils
+        try:
+            self.hands = mp.solutions.hands.Hands(
+                static_image_mode=False,
+                max_num_hands=1,
+                min_detection_confidence=0.55,
+                min_tracking_confidence=0.5,
+            )
+            self.face_mesh = mp.solutions.face_mesh.FaceMesh(
+                static_image_mode=False,
+                max_num_faces=1,
+                refine_landmarks=True,
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.5,
+            )
+            self.drawer = mp.solutions.drawing_utils
+        except Exception:
+            self.hands = None
+            self.face_mesh = None
+            self.drawer = None
 
     def _speed_score(self, center: np.ndarray) -> float:
         if self.previous_center is None:

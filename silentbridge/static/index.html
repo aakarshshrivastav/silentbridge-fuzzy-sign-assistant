@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SilentBridge</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Fuzzy sign-to-speech assistant</p>
+        <h1>SilentBridge</h1>
+        <p class="subtitle">Real-time communication support with sign detection, distress cues, urgency scoring, and voice output.</p>
+      </div>
+      <div class="status-strip">
+        <span id="classifierStatus">Classifier loading</span>
+        <span id="cameraStatus">Camera idle</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="workspace">
+        <div class="toolbar">
+          <div class="segmented" aria-label="Mode">
+            <button id="demoMode" class="active" type="button">Demo</button>
+            <button id="liveMode" type="button">Live Camera</button>
+          </div>
+          <div class="live-actions">
+            <button id="startCamera" type="button">Start Camera</button>
+            <button id="stopCamera" type="button">Stop</button>
+          </div>
+        </div>
+
+        <div id="demoPanel" class="panel">
+          <div class="controls-grid">
+            <label>
+              <span>Gesture</span>
+              <select id="gestureSelect"></select>
+            </label>
+            <label>
+              <span>Confidence <output id="confidenceOut">87%</output></span>
+              <input id="gestureConfidence" type="range" min="0" max="1" value="0.87" step="0.01" />
+            </label>
+            <label>
+              <span>Visibility <output id="visibilityOut">82%</output></span>
+              <input id="handVisibility" type="range" min="0" max="1" value="0.82" step="0.01" />
+            </label>
+            <label>
+              <span>Distress <output id="distressOut">78%</output></span>
+              <input id="facialDistress" type="range" min="0" max="1" value="0.78" step="0.01" />
+            </label>
+            <label>
+              <span>Repetition <output id="repetitionOut">74%</output></span>
+              <input id="repetition" type="range" min="0" max="1" value="0.74" step="0.01" />
+            </label>
+            <label>
+              <span>Speed <output id="speedOut">68%</output></span>
+              <input id="gestureSpeed" type="range" min="0" max="1" value="0.68" step="0.01" />
+            </label>
+          </div>
+        </div>
+
+        <div id="livePanel" class="panel hidden">
+          <div class="video-shell">
+            <img id="videoFeed" src="" alt="Live annotated webcam feed" />
+            <div id="videoPlaceholder">Start camera to view live hand tracking</div>
+          </div>
+        </div>
+
+        <section id="resultPanel" class="result-panel">
+          <div>
+            <p class="label">Detected Message</p>
+            <h2 id="englishMessage">I need help.</h2>
+            <p id="hindiMessage" class="hindi">मुझे मदद चाहिए।</p>
+          </div>
+          <div class="metrics">
+            <div>
+              <span>Gesture</span>
+              <strong id="detectedGesture">Help</strong>
+            </div>
+            <div>
+              <span>Communication</span>
+              <strong id="communicationScore">86%</strong>
+            </div>
+            <div>
+              <span>Urgency</span>
+              <strong id="urgencyScore">0.85</strong>
+            </div>
+            <div>
+              <span>Engine</span>
+              <strong id="engineName">Mamdani</strong>
+            </div>
+          </div>
+          <p id="suggestedAction" class="action-text">Critical alert: call help immediately.</p>
+          <div class="action-row">
+            <button id="speakOutput" type="button">Speak Output</button>
+            <button id="logOutput" type="button">Log Message</button>
+          </div>
+        </section>
+
+        <section class="quick-replies">
+          <div class="section-title">
+            <p class="label">Two-way communication</p>
+            <h2>Quick Replies</h2>
+          </div>
+          <div id="quickReplies" class="reply-grid"></div>
+        </section>
+      </section>
+
+      <aside class="side">
+        <section>
+          <div class="section-title">
+            <p class="label">Recent activity</p>
+            <h2>History</h2>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+        <section>
+          <div class="section-title">
+            <p class="label">Fuzzy logic</p>
+            <h2>Membership Functions</h2>
+          </div>
+          <canvas id="membershipCanvas" width="520" height="300"></canvas>
+        </section>
+      </aside>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
