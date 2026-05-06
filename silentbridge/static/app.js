@@ -2,6 +2,7 @@ const state = {
   mode: "demo",
   latest: null,
   poller: null,
+  selectedSign: "Help",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -60,18 +61,17 @@ function renderResult(result) {
   $("hindiMessage").textContent = result.message.hindi;
   $("detectedGesture").textContent = result.label;
   $("communicationScore").textContent = percent(result.communication_confidence);
-  $("urgencyScore").textContent = Number(result.urgency).toFixed(2);
+  $("urgencyBadge").textContent = `Urgency ${Number(result.urgency).toFixed(2)}`;
   $("engineName").textContent = result.engine.replace("scikit-fuzzy ", "");
   $("suggestedAction").textContent = result.action_level;
   $("resultPanel").classList.toggle("emergency", Boolean(result.emergency));
+  document.querySelectorAll(".sign-grid button").forEach((button) => {
+    button.classList.toggle("active", button.dataset.sign === result.label);
+  });
 }
 
 function setMode(mode) {
   state.mode = mode;
-  $("demoPanel").classList.toggle("hidden", mode !== "demo");
-  $("livePanel").classList.toggle("hidden", mode !== "live");
-  $("demoMode").classList.toggle("active", mode === "demo");
-  $("liveMode").classList.toggle("active", mode === "live");
 }
 
 async function startCamera() {
@@ -79,9 +79,13 @@ async function startCamera() {
   const status = await api("/api/live/start", { method: "POST", body: "{}" });
   if (!status.ok) {
     $("cameraStatus").textContent = status.error || "Camera unavailable";
+    $("videoFeed").style.display = "none";
+    $("videoPlaceholder").style.display = "grid";
+    $("videoPlaceholder").textContent = "Camera is unavailable. You can still use the sign buttons above.";
     return;
   }
   $("videoPlaceholder").style.display = "none";
+  $("videoFeed").style.display = "block";
   $("videoFeed").src = `/video_feed?t=${Date.now()}`;
   $("cameraStatus").textContent = "Camera running";
   if (state.poller) clearInterval(state.poller);
@@ -91,7 +95,9 @@ async function startCamera() {
 async function stopCamera() {
   await api("/api/live/stop", { method: "POST", body: "{}" });
   $("videoFeed").src = "";
+  $("videoFeed").style.display = "none";
   $("videoPlaceholder").style.display = "grid";
+  $("videoPlaceholder").textContent = "Camera preview appears here";
   $("cameraStatus").textContent = "Camera idle";
   if (state.poller) clearInterval(state.poller);
   state.poller = null;
@@ -201,6 +207,20 @@ async function init() {
   controls.gestureSelect.innerHTML = status.signs.map((sign) => `<option value="${sign}">${sign}</option>`).join("");
   controls.gestureSelect.value = "Help";
 
+  $("signButtons").innerHTML = "";
+  status.signs.forEach((sign) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.sign = sign;
+    button.textContent = sign;
+    button.addEventListener("click", () => {
+      state.selectedSign = sign;
+      controls.gestureSelect.value = sign;
+      evaluateDemo();
+    });
+    $("signButtons").appendChild(button);
+  });
+
   $("quickReplies").innerHTML = "";
   status.quick_replies.forEach((reply) => {
     const button = document.createElement("button");
@@ -211,8 +231,6 @@ async function init() {
   });
 
   Object.values(controls).forEach((control) => control.addEventListener("input", evaluateDemo));
-  $("demoMode").addEventListener("click", () => setMode("demo"));
-  $("liveMode").addEventListener("click", () => setMode("live"));
   $("startCamera").addEventListener("click", startCamera);
   $("stopCamera").addEventListener("click", stopCamera);
   $("speakOutput").addEventListener("click", () => state.latest && speakText(state.latest.message.voice));
